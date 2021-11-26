@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Using object assignment</title>
+  </head>
+  <body>
+    <script>
+      'use strict';
+      let bar = {
+        name: 'John',
+        friends: ['Rick', 'Bob', 'Pete'],
+        age: 34
+      }
+       let obj = {};
+      Object.assign(obj,bar);
+      obj.friends.push('Betty');
+      bar.friends.push('Tommy');
+      bar.age = 99;
+      const pp = 0;
+    </script>
+  </body>
+</html>

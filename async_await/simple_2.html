@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Simple Implementation of async/await from a blog</title>
+  </head>
+  <script>
+   'use strict';
+   //blog: https://blog.patricktriest.com/what-is-async-await-why-should-you-care/
+    window.addEventListener("load",(e) =>{
+      class user {
+        constructor(id, name, photo){
+          this.info = {id: id, name: name};
+          this.friends = [];
+          this.photo = photo;
+        }
+
+        getInfo(){
+          return new Promise((resolve, reject) =>{
+            resolve(this.info)
+          })
+        }
+
+        getFriends(){
+          return new Promise((resolve, reject) =>{
+            resolve(this.friends.slice())
+          })
+        }
+
+        getPhoto(){
+          return new Promise((resolve, reject) =>{
+            resolve(this.photo)
+          })
+        }
+        toString(){
+          return this.info.name;
+        }
+      }
+
+      const rick = new user(1, 'Rick', 'Rick Photo');
+      const joe = new user(2, 'Joe', 'Joe Photo');
+      const sally = new user(3, 'Sally', 'Sally Photo');
+      const bert = new user(4, 'Bert', 'Bert Photo');
+
+      rick.friends.push(joe, sally);
+      joe.friends.push(bert, sally);
+      sally.friends.push(rick, joe);
+
+      class users_api {
+        constructor(users){
+          this.users = users;
+        }
+
+        get_user(name){
+          return new Promise((resolve, reject) =>{
+            for(const [idx, user] of this.users.entries()){
+              user.getInfo().then((returned_info) =>{
+                if(returned_info.name === name){
+                  resolve(user)
+                }else if(idx === this.users.length - 1){
+                  reject('Could not find user ' + name)
+                }
+              });
+            }
+          })
+        }
+      }
+
+      const users = new users_api([rick, joe, sally, bert]);
+      //simply calling 'get_user' Promise
+      users.get_user('Rick').then((returned_user) =>{
+        console.log("Calling Promise function get_user('Rick'): ",returned_user)
+      }).catch((err) =>{
+        console.error('users_api/get_user error: ' + err)
+      });
+      //calling 'get_user' again with Promise that is rejected (no 'Steve')
+      users.get_user('Steve').then((returned_user) =>{
+        console.log("Calling Promise function get_user('Steve'): ",returned_user)
+      }).catch((err) =>{
+        console.error('users_api/get_user error: ' + err)
+      });
+
+      //using nested promise callback functions (callback hell)
+      const nested_promises = (user_arg) =>{
+        let user,friends,photo;
+        users.get_user(user_arg).then(
+          (returned_user) =>{
+            user = returned_user;
+            returned_user.getFriends().then((returned_friends) =>{
+              friends = returned_friends;
+              returned_user.getPhoto().then((returned_photo) =>{
+                photo = returned_photo;
+                returned_user.getInfo().then((returned_info) =>{
+                  const info_str = JSON.stringify(returned_info);
+                  console.log('Calling nested Promises: ' + JSON.stringify({user: user.toString(), info: info_str, photo: photo}))
+                })
+              })
+            })
+          }
+        ).catch((err) =>{
+          console.error('nested_promises error: '+ err)
+        })
+      };
+      nested_promises('Sally');
+
+      //chain the promises by returning another promise inside the callback
+      const chain_promises = (user_arg) => {
+        let user, friends,photo;
+        users.get_user(user_arg)
+          .then((returned_user) =>{
+            user = returned_user;
+            return returned_user.getFriends()
+          })
+          .then((returned_friends) =>{
+            friends = returned_friends;
+            return user.getPhoto()
+          })
+          .then((returned_photo) =>{
+            photo = returned_photo;
+            return user.getInfo()
+          }).then((returned_info) =>{
+            const info_str = JSON.stringify(returned_info);
+            console.log('Calling chained Promises (chain_promises): ' + JSON.stringify({user: user.toString(), info: info_str, photo: photo}))
+          }).catch((err) => {
+            console.error('chain_promises error: ' + err)
+          })
+      };
+      chain_promises('Rick');
+
+      //see if we catch an error with user_arg = 'Steve'
+      chain_promises('Steve');
+
+      //using async/await
+      async function async_await_promises(user_arg){
+        try {
+          const user = await users.get_user(user_arg);
+          const friends = await user.getFriends();
+          const photo = await user.getPhoto();
+          const info = await user.getInfo();
+          const info_str = JSON.stringify(info);
+          console.log('Calling an async function with awaits (async_await_promises): ' + JSON.stringify({
+            user: user.toString(),
+            info: info_str,
+            photo: photo
+          }));
+        }catch(err){
+          console.error('async_await_promises error: ' + err)
+        }
+      }
+      async_await_promises('Bert');
+
+      //see if we catch an error with user_arg = 'Steve'
+      async_await_promises('Steve');
+
+      //Recursive Promise Loop
+      //define a function that recursively obtain friends of friends of a user
+      const friends_of_friends = (user_arg,friends) => {
+        let friend;
+        if(friends.length > 0){
+          friend = friends.pop();
+          return friend.getFriends()
+          .then((more_friends) => {
+            const friends_str = [];
+            for(let user of more_friends){
+              friends_str.push(user.toString())
+            }
+            console.log('friends_of_friends for user: ' + user_arg + ' --friends of '+ friend.toString(),friends_str);
+            return friends_of_friends(user_arg,friends)
+          })
+        }
+      };
+      const demo_recursive_promises = (user_arg) =>{
+        users.get_user(user_arg)
+        .then((returned_user) =>{
+          return returned_user.getFriends()
+        })
+        .then((returned_friends) =>{
+          return friends_of_friends(user_arg,returned_friends)
+        })
+      };
+      demo_recursive_promises('Rick');
+
+      //getting friends of friends via looping async function
+      async function looping_async_friends_of_friends(user_arg){
+        const user = await users.get_user(user_arg);
+        const friends = await user.getFriends();
+        for(let friend of friends){
+          let more_friends = await friend.getFriends();
+          const friends_str = [];
+          for(let user of more_friends){
+            friends_str.push(user.toString())
+          }
+          console.log('looping_async_friends_of_friends for user: ' + user_arg + ' --friends of '+ friend.toString(),friends_str)
+        }
+      }
+      looping_async_friends_of_friends('Sally');
+
+      //parallel getting friends of friends with async/await using Promise.all
+      async function promise_all_async_friends_of_friends(user_arg){
+        const user = await users.get_user(user_arg);
+        const friends = await user.getFriends();
+        const friends_str = [];
+        for(let user of friends){
+          friends_str.push(user.toString())
+        }
+        const friend_promises = friends.map(friend => friend.getFriends());
+        const more_friends = await Promise.all(friend_promises);
+        const friends_of_friends = [];
+        for(let user of more_friends){
+          friends_of_friends.push(user.toString())
+        }
+        console.log('promise_all_async_friends_of_friends for user: '+ user_arg + ' friends: ' + friends_str,friends_of_friends)
+      }
+      promise_all_async_friends_of_friends('Rick');
+
+      //Composition
+      //Any function tagged with "async" actually returns a promise.  This allows us to really easily compose asynchronous control flows.
+      async function async_get_user_info(user_arg){
+        try {
+          const user = await users.get_user(user_arg);
+          const friends = await user.getFriends();
+          const photo = await user.getPhoto();
+          const info = await user.getInfo();
+          const info_str = JSON.stringify(info);
+          return JSON.stringify({
+            user: user.toString(),
+            info: info_str,
+            photo: photo
+          });
+        }catch(err){
+          console.error('async_get_user_info error: ' + err)
+        }
+      }
+      async_get_user_info('Sally').then((returned_info) => {
+        console.log('async_get_user_info: ', returned_info)
+      });
+      //we can await the async function
+      async function await_async_function(){
+        const info = await async_get_user_info('Rick');
+        console.log("await an async function : ", info);
+      }
+      await_async_function();
+
+      //await an async function in a loop to get many user info
+      async function async_get_users_info(user_names){
+        const users_info = [];
+        for(let name of user_names){
+          users_info.push(await async_get_user_info(name))
+        }
+        console.log("async_get_users_info: ", users_info);
+      }
+      async_get_users_info(['Rick','Joe']);
+
+      //get many user info in parallel
+      async function promise_all_get_users_info(user_names){
+        const promises = user_names.map(name => async_get_user_info(name));
+        const users_info = await Promise.all(promises);
+        console.log('promise_all_get_users_info',users_info);
+      }
+      promise_all_get_users_info(['Sally','Bert']);
+    })
+  </script>
+  <body>
+    
+  </body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+  </head>
+  <body>
+    <script>
+      'use strict';
+      //Two important applications of generators:
+      // 1. Implementing iterables
+      // 2. Blocking on asynchronous function calls
+
+      //iterables via generators
+      function* objectEntries(obj){
+        let propKeys = Object.keys(obj);
+        for(let propKey of propKeys){
+          //'yield' returns a value then pauses
+          yield [propKey, obj[propKey]];
+        }
+      }
+      let jane = {first: 'Jane', last: 'Doe'};
+      for(let val of objectEntries(jane)){
+        console.log(val);
+      }
+      //This is a generator function. The star preceding the function name means it will return a 'generator' object
+      //even though none of the code inside explicitly says so.
+      //This is an example of yield as a producer where we retrieve 'next().value' from the generator object 'generator'
+      function *getAllSquareNumbers(){
+        for(let i=1; ; i++){
+          //Every time we 'yield', this function's execution pauses until the generator is restarted ba a call to 'next'
+          yield  i * i;
+        }
+      }
+      //fetch some numbers
+      const generator = getAllSquareNumbers();
+      console.log(generator.next().value);
+      console.log(generator.next().value);
+      console.log(generator.next().value);
+      console.log(generator.next().value);
+
+      function *count(n){
+        for(let i = 0; i < n; i++){
+          yield i;
+        }
+      }
+
+      for(let x of count(3)){
+        console.log(x);
+      }
+      /*
+      generators can play three roles:
+      1. Iterators(data producers): Each yield can return via next().value as above
+      2. Observers(data consumers): yield can also receive a value from next() as a parameter.
+      3. Coroutines(data producers and consumers): cooperatively multitasked tasks
+       */
+
+      //generator as a observer or consumer:
+      //Note: that we need 3 calls of 'next()' to complete. The only purpose of the first 'next()' is to start the observer
+      function* dataConsumer() {
+        let lastInput = 'Started';
+        lastInput = yield console.log('1. ' + lastInput);
+        lastInput = yield console.log('2. ' + lastInput);
+        console.log('3.' + lastInput);
+      }
+      let genObj1 = dataConsumer();
+      console.log(genObj1.next());
+      console.log(genObj1.next('a'));
+      console.log(genObj1.next('b'));
+
+      //fixing to where we won't need the extra 'next()'
+      function coroutine(genFunction){
+        return function() {
+          let generatorObj = genFunction;
+          generatorObj.next();
+          return generatorObj;
+        }
+      }
+      const wrapped = coroutine(dataConsumer());
+      wrapped().next('hello');
+
+      /*using '.return(x)' and '.throw(x)'
+      They work similar to '.next()' but something different in following step:
+        .return(x) executes 'return x' at the location of yield
+        .throw(x) executes 'throw x' at the location of yield
+       */
+      //Example:
+      function* genFunc(){
+        let lastInput = 'Started';
+        try {
+          lastInput = yield console.log('1. ' + lastInput);
+        }finally {
+          console.log(lastInput)
+        }
+      }
+      //not yet implemented in Chrome
+      /*
+      let genObj2 = genFunc();
+      genObj2.next('a');
+      genObj2.return('result');
+      */
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Test Promise.all from Mozilla MDN</title>
+  </head>
+  <script>
+   'use strict';
+   
+    window.addEventListener("load",(e) => {
+      const p1 = Promise.resolve(3);
+      const p2 = 1337;
+      const p3 = new Promise((resolve,reject) => {
+        setTimeout(() => {
+          resolve('foo');
+        },2000);
+      });
+      Promise.all([p1,p2,p3]).then(values => {
+        console.log(values);
+      })
+    });
+  </script>
+  <body>
+    
+  </body>
+</html>

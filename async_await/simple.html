@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Simple Implementation of async/await from Mozilla MDN</title>
+  </head>
+  <script>
+   'use strict';
+   
+    window.addEventListener("load",(e) => {
+      function resolveAfter(x,wait_time){
+        return new Promise(resolve => {
+          setTimeout(() => {
+            resolve(x);
+          },wait_time);
+        })
+      }
+      async function add_it(x){
+        const a = await resolveAfter(20,4000);
+        const b = await resolveAfter(30,6000);
+        return x + a + b;  //Note there is no await on the return statement,
+                          // because the return value of an async function is implicitly wrapped in Promise.resolve
+      }
+      add_it(10).then((val) => {
+        console.log(val) //prints 60 after 4 seconds
+      });
+      const pp = 0;
+    });
+  </script>
+  <body>
+    
+  </body>
+</html>

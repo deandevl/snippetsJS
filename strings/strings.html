@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title></title>
+  </head>
+  <body>
+    <script>
+      'use strict';
+      
+      //template literals
+      //es5 way using '+' to concat
+      function printCoordES5(x,y) {
+        console.log('(' + x + ',' + y + ')');
+      }
+      printCoordES5(3,4);
+
+      //ES6
+      //new way without using '+'
+      function printCoordES6(x,y){
+        console.log( `(${x}, ${y})`);
+      }
+      printCoordES6(8,10);
+
+      var name = "rick";
+      console.log(`Yo, ${name}!`);
+
+      //carry out expressions within template
+      const price = 9.99;
+      const shipping = 3.99;
+      const message = `Your total with shipping will be ${price + shipping}`;
+
+      //tagged template literal
+      function tagFunction(ar,first,last){
+        console.log(`Hello ${last} ${first}`);
+      }
+      const first = 'Rick';
+      const last = 'Dean';
+      tagFunction `${first} ${last}`;
+
+      //tenolate literals--multiple lines
+      const html =`
+        <!doctype html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <title></title>
+          </head>
+          <body>
+          </body>
+        </html>`;
+      console.log(html);
+      var pp = 0;
+    </script>
+  </body>
+</html>

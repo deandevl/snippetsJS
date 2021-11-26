@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Using ES6 Modules</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  </head>
+  <script type="module">
+    import {addTextToBody} from './create_element.js';
+    import console_log from './write_to_console.js';
+    import {sqrt, square, diag} from "./math.js";
+
+    addTextToBody('Modules are pretty cool.');
+    console_log('Module function "console_log()" wrote this.');
+
+    // math functions
+    const x = 5;
+    const y = 3;
+
+    const ans_1 = sqrt(x);
+    const ans_2 = square(y);
+    const ans_3 = diag(x,y);
+
+    const pp = 0;
+  </script>
+
+  <body>
+  </body>
+</html>

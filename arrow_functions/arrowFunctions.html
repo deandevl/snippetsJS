@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title></title>
+  </head>
+  <body>
+  <script>
+    'use strict';
+  /*
+    Three reasons to use arrow functions:
+    1. Concise syntax
+    2. They have implicit returns.
+    3. They don't rebind the value of 'this' when you use an arrow function inside of another function.
+  */
+
+
+  //reduce verbosity
+    {
+      const squares_es5 = [1, 2, 3].map(function (x) { return x * x});
+      console.log('squares_es5 ' +  squares_es5);
+
+      const squares_es6 = [1, 2, 3].map((x) => x * x);  //no need for 'return' for a one line operation
+      console.log('squares_es6: ' + squares_es6);
+
+    //Note you don't need parenthesis around the x parameter:
+      [1,2,3].map(x => {console.log('x: ' + x + ' xsq: ' + x * x);  return x * x}); //two line operation
+    }
+
+    //As soon as there is anything else, you have to type the parentheses:
+    var newArray = [[1,2], [3,4]].map(([a,b]) => a + b);
+    console.log('newArray: ' + newArray);
+
+    //using default value
+    var defaultArray = [1, undefined, 3].map((x=6) => x*x);
+    console.log('defaultArray: ' + defaultArray);
+
+    /*
+    Arrow functions bind very loosely.  The reason is that you want every expression that can appear in an expression
+    body to "stick together", it should bind more tightly than the arrow function.
+    As a consequence, you often have to wrap arrow functions in parentheses if they appear somewhere else.
+    For example:
+    */
+    //console.log(typeof () => {}); //syntax error?  not for Chrome--returns 'function'
+    console.log(typeof (() => {}));  //ok returns 'function'
+
+    //In arrow functions, the value of 'this' refers to the parent scope
+     //using this and self via es5
+     const person_es5 = {
+       firstName: 'Ryan',
+       hobbies: ['Robots','Games','Internet'],
+       showHobbies: function(){
+         const self = this; //need to do this for es5
+         this.hobbies.forEach(function(hobby){
+           console.log(self.firstName + ' likes ' + hobby);
+         });
+       }
+     };
+     person_es5.showHobbies();
+
+    //now change to arrow function
+    const person_es6 = {
+      firstName: 'Ryan',
+      hobbies: ['Robots','Games','Internet'],
+      showHobbies: function(){
+        //no need for 'self'; 'this' is from the parent 'person_es6'
+        this.hobbies.forEach((hobby) => console.log(this.firstName + ' likes ' + hobby));
+      }
+    };
+    person_es6.showHobbies();
+   </script>
+  </body>
+</html>
